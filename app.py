@@ -1,27 +1,21 @@
 import os
 import requests
 
-from flask import Flask, session, render_template, request
-from flask_session import Session
-from sqlalchemy import create_engine
-from sqlalchemy.orm import scoped_session, sessionmaker
+from flask import Flask, render_template, request
+from werkzeug.security import generate_password_hash, check_password_hash
+
+from tables import *
 
 KEY = 'yAcxcAMdMRIghLzrb86x5Q'
-
-app = Flask(__name__)
 
 # Check for environment variable
 if not os.getenv("DATABASE_URL"):
     raise RuntimeError("DATABASE_URL is not set")
 
-# Configure session to use filesystem
-app.config["SESSION_PERMANENT"] = False
-app.config["SESSION_TYPE"] = "filesystem"
-Session(app)
-
-# Set up database
-engine = create_engine(os.getenv("DATABASE_URL"))
-db = scoped_session(sessionmaker(bind=engine))
+app = Flask(__name__)
+app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://localhost/project1'
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+db.init_app(app)
 
 
 @app.route('/')
@@ -35,8 +29,8 @@ def login():
         username = request.form.get('username')
         password = request.form.get('password')
 
-        hello = db.execute('SELECT * FROM users WHERE username = :username AND password = :password',
-                   {'username': username, 'password': password}).first()
+        if check_password_hash(password):
+            return render_template('index.html')
 
         return render_template('login.html')
 
@@ -47,10 +41,10 @@ def login():
 def signup():
     if request.method == 'POST':
         username = request.form.get('username')
-        password = request.form.get('password')
+        password = generate_password_hash(request.form.get('password'))
 
-        db.execute('INSERT INTO users(username, password) VALUES (:username, :password)',
-                   {'username': username, 'password':password})
-        db.commit()
+        db.session.add(Users(username=username, password=password))
+        db.session.commit()
+
         return render_template('login.html')
     return render_template('signup.html')
