@@ -1,2 +1,5 @@
 .DS_Store
 venv/
+.idea/
+__pycache__/
+flask_session/
