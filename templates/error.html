@@ -1,0 +1,23 @@
+{% extends 'layout.html' %}
+
+{% block title %} An error occurred {% endblock %}
+
+{% block style %}
+    <style>
+        .container {
+            margin-top: 100px;
+            text-align: center
+        }
+    </style>
+
+{% endblock %}
+
+{% block body %}
+
+<div class="container">
+    <h1>An error occurred</h1>
+
+    <p>{{ message }}</p>
+</div>
+
+{% endblock %}
