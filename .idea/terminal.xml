@@ -1,9 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<project version="4">
-  <component name="TerminalProjectOptionsProvider">
-    <envs>
-      <env key="FLASK_ENV" value="development" />
-      <env key="DATABASE_URL" value="postgres://zqcppxnwvfmdcm:487e36298a94cb5e641164f31562c089a55e1214988d51cec0ee24f0be3e7d4b@ec2-107-22-160-185.compute-1.amazonaws.com:5432/dvgb394m5r7ap" />
-    </envs>
-  </component>
-</project>
