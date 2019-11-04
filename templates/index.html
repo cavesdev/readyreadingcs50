@@ -3,14 +3,35 @@
 {% block title %} ReadyReading! {% endblock %}
 
 {% block body %}
-<div class="jumbotron" style="text-align: center">
-    <h1>Welcome to ReadyReading!</h1>
-    <h2>Your favorite book review site!</h2>
+    <div class="jumbotron" style="text-align: center">
+        <h1>Welcome to ReadyReading!</h1>
+        <h2>Your favorite book review site!</h2>
+    </div>
 
-    <h3>-Placeholder for image-</h3>
-</div>
+    <div class="container">
+        <h2>Featured books</h2>
+    </div>
 
-<div class="container">
-    <h2>Featured books</h2>
-</div>
+    <div class="container">
+        <h2>Search for a book</h2>
+
+        <form action="{{ url_for('search') }}" method="post">
+            <div class="form-group">
+                <input class="form-control" type="search" placeholder="Search for a book by ISBN, title, author or year"
+                aria-label="Search" name="keyword">
+            </div>
+            <div class="form-group">
+                <select class="form-control form-control-sm" name="kw_type" style="width: 80px">
+                    <option value="isbn">ISBN</option>
+                    <option value="title">Title</option>
+                    <option value="author">Author</option>
+                    <option value="year">Year</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <button class="btn btn-light" type="submit">Search</button>
+            </div>
+
+        </form>
+    </div>
 {% endblock %}

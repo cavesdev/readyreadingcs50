@@ -2,7 +2,7 @@ import os
 
 from flask import Flask, session, render_template, request, url_for, redirect
 from flask_session import Session
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, text
 from sqlalchemy.orm import scoped_session, sessionmaker
 
 KEY = 'yAcxcAMdMRIghLzrb86x5Q'
@@ -73,3 +73,16 @@ def logout():
 
     session['username'] = None
     return redirect(url_for('index'))
+
+
+@app.route('/search', methods=['POST'])
+def search():
+    keyword = request.form.get('keyword')
+    kw_type = request.form.get('kw_type')
+
+    if kw_type is None:
+        kw_type = 'title'
+
+    results = db.execute(f"SELECT * FROM books WHERE {kw_type} LIKE :keyword", {"keyword": f"%{keyword}%"}).fetchall()
+
+    return render_template('search.html', keyword=keyword, results=results)
