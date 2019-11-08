@@ -1,0 +1,96 @@
+{% extends 'layout.html' %}
+
+{% block title %} Details for {{ book.title }} {% endblock %}
+
+{% block style %}
+    <style>
+        table {
+            width: 100%;
+        }
+        th, td {
+            padding: 5px;
+        }
+        th {
+            font-size: larger;
+        }
+
+        .fa-star {
+            color: orange;
+        }
+
+        iframe {
+            padding: 12px;
+            border-radius: 5%;
+        }
+    </style>
+    <link href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet">
+
+{% endblock %}
+
+{% block body %}
+
+    <div class="container">
+        <h2>Book details</h2>
+        <table>
+            <tr>
+                <th>Title</th>
+                <th>Author</th>
+            </tr>
+            <tr>
+                <td>{{ book.title }}</td>
+                <td>{{ book.author }}</td>
+            </tr>
+            <tr>
+                <th>Publication year</th>
+                <th>ISBN</th>
+            </tr>
+            <tr>
+                <td>{{ book.year }}</td>
+                <td>{{ book.isbn }}</td>
+            </tr>
+        </table>
+    </div>
+
+    <div class="container">
+        <h2>Reviews</h2>
+        <ul>
+            {% for review in reviews %}
+                <li><b>{{ review.username }}
+                    {% for star in range(review.rating) %}
+                        <i class="fa fa-star"></i>
+                    {% endfor %}
+                    :</b> {{ review.review }}</li>
+            {% else %}
+            <li> No reviews yet.</li>
+            {% endfor %}
+        </ul>
+
+        <h3>Goodreads reviews:</h3>
+        {{ gr_reviews.reviews_widget|safe }}
+    </div>
+
+    <div class="container">
+        <h3>Leave a review:</h3>
+        <form method="post">
+            {% for star in range(1, 6) %}
+                <div class="custom-control custom-radio custom-control-inline">
+                    <input class="custom-control-input" id="{{ star }}" name="star-rating" type="radio"
+                           value="{{ star }}" required>
+                    <label class="custom-control-label" for="{{ star }}">
+                        {% for icon in range(star) %}
+                            <i class="fa fa-star"></i>
+                        {% endfor %}
+                    </label>
+                </div>
+            {% endfor %}
+            <div class="form-group">
+                <label for="review_text">Write a review:</label>
+                <textarea class="form-control" id="review-text" name="review-text" rows="4" required></textarea>
+            </div>
+            <div class="form-group">
+                <button class="btn btn-light" type="submit">Submit</button>
+            </div>
+        </form>
+    </div>
+
+{% endblock %}

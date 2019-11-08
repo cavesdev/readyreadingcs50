@@ -1,11 +1,14 @@
 import os
+import requests
 
 from flask import Flask, session, render_template, request, url_for, redirect
 from flask_session import Session
 from sqlalchemy import create_engine, text
 from sqlalchemy.orm import scoped_session, sessionmaker
 
+
 KEY = 'yAcxcAMdMRIghLzrb86x5Q'
+USER_ID = 102371908
 
 # Check for environment variable
 if not os.getenv("DATABASE_URL"):
@@ -38,13 +41,16 @@ def login():
         if db.execute("SELECT * FROM users WHERE username = :username", {"username": username}).rowcount == 0:
             return render_template('error.html', message="User doesn't exist. Please register first.")
 
-        # try to log in users
-        if db.execute("SELECT * FROM users WHERE username = :username AND password = :password",
-                      {"username": username, "password": password}).rowcount == 0:
+        # try to log in user
+        user = db.execute("SELECT * FROM users WHERE username = :username AND password = :password",
+                          {"username": username, "password": password}).fetchone()
+
+        if user is None:
             return render_template('error.html', message="Incorrect password.")
 
-        session['username'] = username
-        return render_template('index.html')
+        session['user_id'] = user.id
+        session['username'] = user.username
+        return redirect(url_for('index'))
     else:
         if session.get('username') is not None:
             return render_template('error.html',
@@ -86,3 +92,33 @@ def search():
     results = db.execute(f"SELECT * FROM books WHERE {kw_type} LIKE :keyword", {"keyword": f"%{keyword}%"}).fetchall()
 
     return render_template('search.html', keyword=keyword, results=results)
+
+
+@app.route('/books/<string:isbn>', methods=['GET', 'POST'])
+def book_detail(isbn):
+
+    book = db.execute("SELECT * FROM books WHERE isbn = :isbn", {"isbn": isbn}).fetchone()
+    reviews = db.execute("SELECT users.username, rating, review FROM reviews JOIN users ON reviews.user_id = users.id "
+                         "WHERE isbn = :isbn", {"isbn": isbn}).fetchall()
+    gr_reviews = requests.get(f'https://www.goodreads.com/book/isbn/{isbn}',
+                              params={"format": 'json', "user_id": USER_ID})
+
+    if request.method == 'POST':
+        if session.get('user_id') is None:
+            render_template('error.html', message="You must be logged in to submit a review.")
+
+        if db.execute("SELECT * FROM reviews WHERE user_id = :user_id AND isbn = :isbn",
+                      {"user_id": session.get('user_id'), "isbn": isbn}).rowcount != 0:
+            return render_template('error.html', message="You can't review a book more than once.")
+
+        user_id = session.get('user_id')
+        rating = request.form.get('star-rating')
+        review = request.form.get('review-text')
+
+        db.execute("INSERT INTO reviews (user_id, isbn, rating, review) "
+                   "VALUES (:user_id, :isbn, :rating, :review)",
+                   {"user_id": user_id, "isbn": isbn, "rating": rating, "review": review})
+        db.commit()
+        return redirect(url_for('book_detail', isbn=isbn))
+
+    return render_template('detail.html', book=book, reviews=reviews, gr_reviews=gr_reviews.json())
