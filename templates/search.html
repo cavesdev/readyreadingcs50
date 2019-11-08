@@ -20,7 +20,9 @@
         <p id="note">You can also use the search bar on the top right corner of the page to search for books by title.</p>
         <ul>
         {% for book in results %}
-            <li>  {{ book.isbn }} - {{ book.title }} by {{ book.author }}, {{ book.year }}.</li>
+            <li> <a href="{{ url_for('book_detail', isbn=book.isbn) }}">
+                {{ book.isbn }} - {{ book.title }} by {{ book.author }}, {{ book.year }}.
+            </a></li>
         {% else %}
             <li>No books found.</li>
         {% endfor %}
