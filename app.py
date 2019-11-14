@@ -1,9 +1,9 @@
 import os
 import requests
 
-from flask import Flask, session, render_template, request, url_for, redirect
+from flask import Flask, session, render_template, request, url_for, redirect, jsonify, abort
 from flask_session import Session
-from sqlalchemy import create_engine, text
+from sqlalchemy import create_engine
 from sqlalchemy.orm import scoped_session, sessionmaker
 
 
@@ -122,3 +122,18 @@ def book_detail(isbn):
         return redirect(url_for('book_detail', isbn=isbn))
 
     return render_template('detail.html', book=book, reviews=reviews, gr_reviews=gr_reviews.json())
+
+
+@app.route('/api/<string:isbn>')
+def api(isbn):
+    book = db.execute("SELECT * FROM books WHERE isbn = :isbn", {"isbn": isbn}).fetchone()
+    review_count = db.execute("SELECT COUNT(*) FROM reviews WHERE isbn = :isbn", {"isbn": isbn}).fetchone()
+    average_rating = db.execute("SELECT AVG(rating) FROM reviews WHERE isbn = :isbn", {"isbn": isbn}).fetchone()
+
+    if book is None:
+        return abort(404)
+    else:
+        avg_float = float("{0:.2f}".format(average_rating.avg))
+        res = dict(title=book.title, author=book.author, year=book.year, isbn=isbn, review_count=review_count.count,
+                   average_rating=avg_float)
+    return jsonify(res)
